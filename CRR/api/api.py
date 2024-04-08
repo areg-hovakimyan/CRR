@@ -2,8 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-# Importing database configurations from db.py
-from db import session, engine, Base, Customer, Product, Order
+from db.dp import session, engine, Base, Customer, Product, Order
 
 app = FastAPI()
 
@@ -85,3 +84,4 @@ def read_order(order_id: int, db: Session = Depends(get_db)):
 # Run this FastAPI application with Uvicorn:
 # uvicorn main:app --reload
 # Ensure to replace 'main' with the actual name of the file where this code is saved.
+#hello
