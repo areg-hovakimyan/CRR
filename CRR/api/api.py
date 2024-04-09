@@ -1,87 +1,65 @@
-from fastapi import FastAPI, HTTPException, Depends
+import pandas as pd
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from typing import Dict
 
-from db.dp import session, engine, Base, Customer, Product, Order
-
-app = FastAPI()
-
-# Dependency to get the database session
-def get_db():
-    try:
-        db = session()
-        yield db
-    finally:
-        db.close()
-
-# Pydantic models for request bodies and responses
-class CustomerCreate(BaseModel):
+# Define a Pydantic model for the Customer data
+class Customer(BaseModel):
     FullName: str
     EmailAddress: str
     Age: int
-    PhoneNumber: str = None
-    Address: str = None
-    Married: str = None
+    PhoneNumber: str
+    Address: str
+    Married: str
 
-class ProductCreate(BaseModel):
-    ProductName: str
-    Price: float
+# Load the data
+data = pd.read_csv('CRR/api/Customer.csv')
 
-class OrderCreate(BaseModel):
-    CustomerID: int
-    OrderDate: str
-    ProductID: int
-    Quantity: int
+# Create FastAPI app instance
+app = FastAPI()
 
-# FastAPI CRUD endpoints for Customer
-@app.post("/customers/", response_model=CustomerCreate)
-def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
-    db_customer = Customer(**customer.dict())
-    db.add(db_customer)
-    db.commit()
-    db.refresh(db_customer)
-    return db_customer
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
-@app.get("/customers/{customer_id}", response_model=CustomerCreate)
-def read_customer(customer_id: int, db: Session = Depends(get_db)):
-    db_customer = db.query(Customer).filter(Customer.CustomerID == customer_id).first()
-    if db_customer is None:
+@app.get("/get_info/{ID}")
+async def get_info(ID: int):
+    """Retrieve information for a customer by their ID."""
+    info = data[data['CustomerID'] == ID].to_dict('records')
+    if not info:
         raise HTTPException(status_code=404, detail="Customer not found")
-    return db_customer
+    return info[0]
 
-# FastAPI CRUD endpoints for Product
-@app.post("/products/", response_model=ProductCreate)
-def create_product(product: ProductCreate, db: Session = Depends(get_db)):
-    db_product = Product(**product.dict())
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
-    return db_product
+@app.post("/add_info", response_model=Dict[str, int])
+async def add_info(customer: Customer):
+    """Add a new customer to the database."""
+    global data
+    customer_dict = customer.dict()
+    customer_dict['CustomerID'] = data['CustomerID'].max() + 1
+    new_row = pd.DataFrame([customer_dict])
+    data = data.append(new_row, ignore_index=True)
+    # Persist changes
+    data.to_csv('CRR/api/Customer.csv', index=False)
+    return {"message": "Customer added successfully", "CustomerID": customer_dict['CustomerID']}
 
-@app.get("/products/{product_id}", response_model=ProductCreate)
-def read_product(product_id: int, db: Session = Depends(get_db)):
-    db_product = db.query(Product).filter(Product.ProductID == product_id).first()
-    if db_product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return db_product
+@app.put("/update_info/{ID}", response_model=Dict[str, str])
+async def update_info(ID: int, update_fields: Dict[str, str]):
+    """Update information for an existing customer."""
+    global data
+    if ID not in data['CustomerID'].values:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    data.loc[data['CustomerID'] == ID, list(update_fields.keys())] = list(update_fields.values())
+    # Persist changes
+    data.to_csv('CRR/api/Customer.csv', index=False)
+    return {"message": "Customer information updated successfully"}
 
-# FastAPI CRUD endpoints for Order
-@app.post("/orders/", response_model=OrderCreate)
-def create_order(order: OrderCreate, db: Session = Depends(get_db)):
-    db_order = Order(**order.dict())
-    db.add(db_order)
-    db.commit()
-    db.refresh(db_order)
-    return db_order
-
-@app.get("/orders/{order_id}", response_model=OrderCreate)
-def read_order(order_id: int, db: Session = Depends(get_db)):
-    db_order = db.query(Order).filter(Order.OrderID == order_id).first()
-    if db_order is None:
-        raise HTTPException(status_code=404, detail="Order not found")
-    return db_order
-
-# Run this FastAPI application with Uvicorn:
-# uvicorn main:app --reload
-# Ensure to replace 'main' with the actual name of the file where this code is saved.
-#hello
+@app.delete("/delete_info/{ID}", response_model=Dict[str, str])
+async def delete_info(ID: int):
+    """Delete a customer from the database."""
+    global data
+    if ID not in data['CustomerID'].values:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    data = data[data['CustomerID'] != ID]
+    # Persist changes
+    data.to_csv('CRR/api/Customer.csv', index=False)
+    return {"message": "Customer deleted successfully"}
