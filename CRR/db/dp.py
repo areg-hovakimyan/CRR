@@ -82,7 +82,7 @@ push_data_to_db(customers_df, Customer)
 push_data_to_db(products_df, Product)
 push_data_to_db(orders_df, Order)
 
-engine = create_engine('sqlite://///Users/karensahakyan/Desktop/group_project/DB.db') 
+engine = create_engine('sqlite://///Users/karensahakyan/Desktop/group_project/DB.db')  #! FIX THIS
 
 Session = sessionmaker(bind=engine)
 session = Session()
