@@ -32,7 +32,7 @@ def get_rfm(customers_df, products_df, orders_df):
 
     # Merge RFM score back to the customer DataFrame
     customer_rfm = customers_df.merge(rfm_table, on='CustomerID', how='left')
-    customer_rfm.to_csv("Customer_RFM_Score.csv", index=False)
+    return customer_rfm
 
     print("RFM analysis completed and saved.")
 
@@ -66,4 +66,6 @@ def get_clusters(df):
     k_selected = 5  # Example: Suppose you decide that 5 clusters are optimal
     kmeans = KMeans(n_clusters=k_selected, random_state=1)
     df['Cluster'] = kmeans.fit_predict(rfm_scaled)
+    df = df[['CustomerID','Recency','Frequency','Monetary','R_Score','F_Score','M_Score','RFM_Score','Cluster']]
     df.to_csv("Customer_RFM_Clusters.csv", index=False)
+    return df
