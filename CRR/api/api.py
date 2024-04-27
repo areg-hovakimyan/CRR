@@ -46,6 +46,13 @@ class Modeling(Base):
     M_Score = Column(Integer)
     RFM_Score = Column(Integer)
     Cluster = Column(Integer)
+    ChurnRiskLevel = Column(String)  
+
+class ChurnRate(Base):
+    __tablename__ = 'ChurnRate'
+
+    ChurnRiskLevel = Column(String, primary_key=True)
+    ChurnRate = Column(Float)    
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -79,6 +86,12 @@ class ModelingCreate(BaseModel):
     M_Score: int
     RFM_Score: int
     Cluster: int
+    ChurnRiskLevel: str
+
+
+class ChurnRateCreate(BaseModel):
+    ChurnRiskLevel : str
+    ChurnRate : float
 
 class CustomerUpdate(BaseModel):
     FullName: str | None = None
@@ -106,7 +119,13 @@ class ModelingUpdate(BaseModel):
     F_Score: int | None = None
     M_Score: int | None = None
     RFM_Score: int | None = None
-    Cluster: int | None = None    
+    Cluster: int | None = None
+    ChurnRiskLevel: str | None = None
+
+class ChurnRateUpdate(BaseModel):
+    ChurnRate : str
+
+
 
 app = FastAPI()
 
@@ -143,6 +162,17 @@ def delete_customer(customer_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Customer deleted successfully"}
 
+@app.patch("/customers/{customer_id}")
+def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = Depends(get_db)):
+    db_customer = db.query(Customer).filter(Customer.CustomerID == customer_id).first()
+    if db_customer is None:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    customer_data = customer.dict(exclude_unset=True)
+    for key, value in customer_data.items():
+        setattr(db_customer, key, value)
+    db.commit()
+    return db_customer
+
 # Product endpoints
 @app.post("/products/", response_model=ProductCreate)
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
@@ -167,6 +197,17 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     db.delete(product)
     db.commit()
     return {"message": "Product deleted successfully"}
+
+@app.patch("/products/{product_id}")
+def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
+    db_product = db.query(Product).filter(Product.ProductID == product_id).first()
+    if db_product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    product_data = product.dict(exclude_unset=True)
+    for key, value in product_data.items():
+        setattr(db_product, key, value)
+    db.commit()
+    return db_product
 
 # Order endpoints
 @app.post("/orders/", response_model=OrderCreate)
@@ -193,6 +234,17 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Order deleted successfully"}
 
+@app.patch("/orders/{order_id}")
+def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db)):
+    db_order = db.query(Order).filter(Order.OrderID == order_id).first()
+    if db_order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order_data = order.dict(exclude_unset=True)
+    for key, value in order_data.items():
+        setattr(db_order, key, value)
+    db.commit()
+    return db_order
+
 # Modeling endpoints
 @app.post("/modeling/", response_model=ModelingCreate)
 def create_modeling(modeling: ModelingCreate, db: Session = Depends(get_db)):
@@ -218,41 +270,6 @@ def delete_modeling(customer_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Modeling record deleted successfully"}
 
-@app.patch("/customers/{customer_id}")
-def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = Depends(get_db)):
-    db_customer = db.query(Customer).filter(Customer.CustomerID == customer_id).first()
-    if db_customer is None:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    customer_data = customer.dict(exclude_unset=True)
-    for key, value in customer_data.items():
-        setattr(db_customer, key, value)
-    db.commit()
-    return db_customer
-@app.patch("/products/{product_id}")
-def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
-    db_product = db.query(Product).filter(Product.ProductID == product_id).first()
-    if db_product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
-    product_data = product.dict(exclude_unset=True)
-    for key, value in product_data.items():
-        setattr(db_product, key, value)
-    db.commit()
-    return db_product
-
-
-
-@app.patch("/orders/{order_id}")
-def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db)):
-    db_order = db.query(Order).filter(Order.OrderID == order_id).first()
-    if db_order is None:
-        raise HTTPException(status_code=404, detail="Order not found")
-    order_data = order.dict(exclude_unset=True)
-    for key, value in order_data.items():
-        setattr(db_order, key, value)
-    db.commit()
-    return db_order
-
-
 
 @app.patch("/modeling/{customer_id}")
 def update_modeling(customer_id: int, modeling: ModelingUpdate, db: Session = Depends(get_db)):
@@ -264,3 +281,43 @@ def update_modeling(customer_id: int, modeling: ModelingUpdate, db: Session = De
         setattr(db_modeling, key, value)
     db.commit()
     return db_modeling
+
+#ChurnRate endpoints
+
+@app.post("/churnrate/", response_model=ChurnRateCreate)
+def create_churnrate(churnrate: ChurnRateCreate, db: Session = Depends(get_db)):
+    existing_churnrate = db.query(ChurnRate).filter(ChurnRate.ChurnRiskLevel == churnrate.ChurnRiskLevel).first()
+    if existing_churnrate:
+        raise HTTPException(status_code=400, detail="ChurnRate record already exists for this risk level")
+    db_churnrate = ChurnRate(**churnrate.dict())
+    db.add(db_churnrate)
+    db.commit()
+    db.refresh(db_churnrate)
+    return db_churnrate
+
+@app.get("/churnrate/{risk_level}", response_model=ChurnRateCreate)
+def get_churnrate(risk_level: str, db: Session = Depends(get_db)):
+    churnrate = db.query(ChurnRate).filter(ChurnRate.ChurnRiskLevel == risk_level).first()
+    if churnrate is None:
+        raise HTTPException(status_code=404, detail="ChurnRate record not found")
+    return churnrate
+
+@app.delete("/churnrate/{risk_level}")
+def delete_churnrate(risk_level: str, db: Session = Depends(get_db)):
+    churnrate = db.query(ChurnRate).filter(ChurnRate.ChurnRiskLevel == risk_level).first()
+    if churnrate is None:
+        raise HTTPException(status_code=404, detail="ChurnRate record not found")
+    db.delete(churnrate)
+    db.commit()
+    return {"message": "ChurnRate record deleted successfully"}
+
+@app.patch("/churnrate/{risk_level}", response_model=ChurnRateCreate)
+def update_churnrate(risk_level: str, churnrate_update: ChurnRateUpdate, db: Session = Depends(get_db)):
+    churnrate = db.query(ChurnRate).filter(ChurnRate.ChurnRiskLevel == risk_level).first()
+    if churnrate is None:
+        raise HTTPException(status_code=404, detail="ChurnRate record not found")
+    churnrate_data = churnrate_update.dict(exclude_unset=True)
+    for key, value in churnrate_data.items():
+        setattr(churnrate, key, value)
+    db.commit()
+    return churnrate

@@ -82,3 +82,22 @@ def rfm_plots(data):
     plt.tight_layout()
     plt.show()
 
+
+def RiskLevelPlot(data):
+    # Set the aesthetic style of the plots
+    sns.set_style("whitegrid")
+    
+    # Prepare the data: sum counts for each combination of Cluster and ChurnRiskLevel
+    data_count = data.groupby(['Cluster', 'ChurnRiskLevel']).size().unstack(fill_value=0)
+
+    # Create a stacked bar plot
+    plt.figure(figsize=(10, 6))
+    data_count.plot(kind='bar', stacked=True, colormap='viridis', figsize=(10, 6))
+    plt.xlabel('Cluster')
+    plt.ylabel('Count')
+    plt.title('Stacked Bar Plot of Cluster by Churn Risk Level')
+    plt.xticks(rotation=45)
+    plt.legend(title='Churn Risk Level', loc='upper right')
+    plt.tight_layout()
+    plt.show()
+

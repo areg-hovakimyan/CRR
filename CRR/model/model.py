@@ -3,6 +3,7 @@ from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.impute import SimpleImputer
+import numpy as np
 
 def get_rfm(customers_df, products_df, orders_df):
     # Ensure correct data types
@@ -10,8 +11,8 @@ def get_rfm(customers_df, products_df, orders_df):
     orders_df.dropna(subset=['OrderDate'], inplace=True)  # Handle missing dates
 
     # Join orders with customers and products
-    orders_df = orders_df.merge(customers_df, on="CustomerID", how='left')
-    orders_df = orders_df.merge(products_df, on="ProductID", how='left')
+    orders_df = orders_df.merge(customers_df, on="CustomerID", how='inner')
+    orders_df = orders_df.merge(products_df, on="ProductID", how='inner')
 
     # Calculate total price for each order
     orders_df['TotalPrice'] = orders_df['Price'] * orders_df['Quantity']
@@ -31,10 +32,10 @@ def get_rfm(customers_df, products_df, orders_df):
     rfm_table['RFM_Score'] = rfm_table['R_Score'].astype(str) + rfm_table['F_Score'].astype(str) + rfm_table['M_Score'].astype(str)
 
     # Merge RFM score back to the customer DataFrame
-    customer_rfm = customers_df.merge(rfm_table, on='CustomerID', how='left')
+    customer_rfm = customers_df.merge(rfm_table, on='CustomerID', how='inner')
     return customer_rfm
 
-    print("RFM analysis completed and saved.")
+    
 
 
 
@@ -69,3 +70,29 @@ def get_clusters(df):
     df = df[['CustomerID','Recency','Frequency','Monetary','R_Score','F_Score','M_Score','RFM_Score','Cluster']]
     df.to_csv("Customer_RFM_Clusters.csv", index=False)
     return df
+
+def classify_churn_risk(rfm_table):
+    # Example risk levels based on RFM quartiles
+    conditions = [
+        (rfm_table['R_Score'] <= 2) & (rfm_table['F_Score'] <= 2) & (rfm_table['M_Score'] <= 2),
+        (rfm_table['R_Score'] >= 3)
+    ]
+    # Labels for risk levels
+    values = ['High Risk', 'Low Risk']
+    default_value = 'Medium Risk'
+    
+    # Create a new column for churn risk level
+    rfm_table['ChurnRiskLevel'] = np.select(conditions, values, default=default_value)
+    return rfm_table
+
+
+def churn_rate_by_risk_level(rfm_table):
+    # Calculate churn rate by risk level
+    risk_level_summary = rfm_table.groupby('ChurnRiskLevel').agg({
+        'CustomerID': 'count'
+    }).rename(columns={'CustomerID': 'Count'})
+    total_customers = rfm_table['CustomerID'].count()
+    risk_level_summary['ChurnRate'] = (risk_level_summary['Count'] / total_customers) * 100
+    risk_level_summary['ChurnRate'] = risk_level_summary['ChurnRate'].round(2)
+    
+    return risk_level_summary[['ChurnRate']]

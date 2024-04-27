@@ -12,7 +12,7 @@ Base = declarative_base()
 class Customer(Base):
     __tablename__ = 'Customer'
 
-    CustomerID = Column(Integer, primary_key=True)
+    CustomerID = Column(String, primary_key=True)
     FullName = Column(String, nullable=False)
     EmailAddress = Column(String, nullable=False)
     Age = Column(Integer)
@@ -24,7 +24,7 @@ class Customer(Base):
 class Product(Base):
     __tablename__ = 'Product'
 
-    ProductID = Column(Integer, primary_key=True)
+    ProductID = Column(String, primary_key=True)
     ProductName = Column(String, nullable=False)
     Price = Column(REAL)
 
@@ -32,7 +32,7 @@ class Product(Base):
 class Order(Base):
     __tablename__ = 'Order'
 
-    OrderID = Column(Integer, primary_key=True)
+    OrderID = Column(String, primary_key=True)
     CustomerID = Column(Integer, ForeignKey('Customer.CustomerID'))
     OrderDate = Column(String)
     ProductID = Column(Integer, ForeignKey('Product.ProductID'))
@@ -41,7 +41,7 @@ class Order(Base):
 class Modeling(Base):
     __tablename__ = 'Modeling'
     
-    CustomerID = Column(Integer, ForeignKey('Customer.CustomerID'), primary_key=True)
+    CustomerID = Column(String, ForeignKey('Customer.CustomerID'), primary_key=True)
     Recency = Column(Float)
     Frequency = Column(Float)
     Monetary = Column(Float)
@@ -50,6 +50,16 @@ class Modeling(Base):
     M_Score = Column(Integer)
     RFM_Score = Column(Float)    
     Cluster = Column(Integer)
+    ChurnRiskLevel = Column(String)  
+
+class ChurnRate(Base):
+    __tablename__ = 'ChurnRate'
+
+    ChurnRiskLevel = Column(String, primary_key=True)
+    ChurnRate = Column(Float)
+
+
+
 # Create an engine that stores data in the local directory's DB.db file.
 engine = create_engine('sqlite:///DB.db')
 
@@ -69,10 +79,12 @@ def view_table(table_class):
         print(instance.__dict__)
 
 
-orders_df = pd.read_csv("/Users/karensahakyan/Desktop/CRR/Order.csv")
-customers_df = pd.read_csv("/Users/karensahakyan/Desktop/CRR/Customer.csv")
-products_df = pd.read_csv("/Users/karensahakyan/Desktop/CRR/Product.csv")
-modeling_df = pd.read_csv('/Users/karensahakyan/Desktop/CRR/RFM_Clusters.csv')
+orders_df = pd.read_csv("Order.csv")
+customers_df = pd.read_csv("Customer.csv")
+products_df = pd.read_csv("Product.csv")
+modeling_df = pd.read_csv('Modeling.csv')
+churnrate_df = pd.read_csv("ChurnRate.csv")
+
 
 def push_data_to_db(df, table_class):
     # Remove any columns from DataFrame that aren't attributes of the table class
@@ -110,6 +122,7 @@ push_data_to_db(modeling_df, Modeling)
 push_data_to_db(customers_df, Customer)
 push_data_to_db(products_df, Product)
 push_data_to_db(orders_df, Order)
+push_data_to_db(churnrate_df, ChurnRate)
 
 def create_database_engine(db_path=None):
     if not db_path.startswith('sqlite:///'):
@@ -140,5 +153,3 @@ for customer in customers:
 Base.metadata.create_all(engine)
 
 # Function to push data into the Modeling table
-
-
