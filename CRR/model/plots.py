@@ -8,7 +8,17 @@ sns.set(style="whitegrid")
 
 # Plot 1: Distribution of RFM Scores
 
-def plot_rfm_distributions(data):
+def plot_rfm_distributions(data: pd.DataFrame)-> None:
+    """
+    Visualizes the distribution of RFM scores across customers.
+
+    Parameters:
+        data (DataFrame): DataFrame containing 'R_Score', 'F_Score', and 'M_Score' columns.
+
+    Description:
+        This function creates histograms for Recency, Frequency, and Monetary scores, 
+        providing a visual distribution which helps in understanding the spread and skewness of these scores.
+    """    
     # Load the data from the given CSV file path
     
 
@@ -37,8 +47,17 @@ def plot_rfm_distributions(data):
     plt.show()
 
 # Plot 2: Distribution of RFM Scores
-def cluster_p(data):
-    # Load the data from the given CSV file path
+def cluster_p(data: pd.DataFrame) -> None:
+    """
+    Plot the distribution of customers across different clusters.
+
+    Parameters:
+        data (DataFrame): DataFrame containing the 'Cluster' column.
+
+    Description:
+        This function creates a count plot that shows how many customers belong to each cluster,
+        helping to visualize the balance or imbalance between clusters.
+    """    
 
     plt.figure(figsize=(10, 6))
     sns.countplot(x='Cluster', data=data)
@@ -48,8 +67,16 @@ def cluster_p(data):
     plt.show()
 
 
-# Plot 3: Age Distribution per Cluster
-def age_dist_per_cluster(data):
+def age_dist_per_cluster(data: pd.DataFrame) -> None:
+    """
+    Visualizes the age distribution within each cluster.
+
+    Parameters:
+        data (DataFrame): DataFrame containing 'Cluster' and 'Age' columns.
+
+    Description:
+        This function uses a boxplot to display the spread and central tendency of age within each cluster.
+    """    
     # Load the data from the given CSV file path
     plt.figure(figsize=(10, 6))
     sns.boxplot(x='Cluster', y='Age', data=data)
@@ -60,7 +87,17 @@ def age_dist_per_cluster(data):
 
 
 # Plot 4
-def rfm_plots(data):
+def rfm_plots(data: pd.DataFrame) -> None:
+    """
+    Plot the relationship between Recency and Monetary values colored by Cluster.
+
+    Parameters:
+        data (DataFrame): DataFrame containing 'Recency', 'Monetary', and 'Cluster' columns.
+
+    Description:
+        This function creates a scatter plot to explore potential correlations between Recency and Monetary values,
+        with points colored by cluster to highlight differences between clusters.
+    """    
 # Load the data
     
 
@@ -83,7 +120,17 @@ def rfm_plots(data):
     plt.show()
 
 
-def RiskLevelPlot(data):
+def RiskLevelPlot(data: pd.DataFrame) -> None:
+    """
+    Displays a stacked bar plot of Churn Risk Level distribution within each cluster.
+
+    Parameters:
+        data (DataFrame): DataFrame with 'Cluster' and 'ChurnRiskLevel' columns.
+
+    Description:
+        This function aggregates data by Cluster and ChurnRiskLevel, then visualizes it in a stacked bar plot,
+        providing insights into the risk distribution within each cluster.
+    """    
     # Set the aesthetic style of the plots
     sns.set_style("whitegrid")
     

@@ -5,7 +5,20 @@ from sklearn.cluster import KMeans
 from sklearn.impute import SimpleImputer
 import numpy as np
 
-def get_rfm(customers_df, products_df, orders_df):
+def get_rfm(customers_df: pd.DataFrame, products_df: pd.DataFrame, orders_df: pd.DataFrame) -> pd.DataFrame:
+
+    """
+    Calculate Recency, Frequency, and Monetary values for each customer and assign RFM scores.
+    
+    Parameters:
+        customers_df (DataFrame): Contains customer data with at least 'CustomerID'.
+        products_df (DataFrame): Contains product data with at least 'ProductID'.
+        orders_df (DataFrame): Contains order data with 'OrderDate', 'CustomerID', 'ProductID', 'Price', and 'Quantity'.
+
+    Returns:
+        DataFrame: A DataFrame with each customer's RFM scores and metrics, merged with the customer information.
+    """
+
     # Ensure correct data types
     orders_df['OrderDate'] = pd.to_datetime(orders_df['OrderDate'], errors='coerce')
     orders_df.dropna(subset=['OrderDate'], inplace=True)  # Handle missing dates
@@ -40,8 +53,17 @@ def get_rfm(customers_df, products_df, orders_df):
 
 
 
-def get_clusters(df):
-    # Impute missing values
+def get_clusters(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply K-Means clustering to customer data based on RFM metrics and save the results.
+
+    Parameters:
+        df (DataFrame): Customer data with RFM metrics.
+
+    Returns:
+        DataFrame: Updated customer data including cluster assignments.
+    """
+
     imputer = SimpleImputer(strategy='mean')
     rfm = df[['Recency', 'Frequency', 'Monetary']]
     rfm_imputed = imputer.fit_transform(rfm)
@@ -50,8 +72,7 @@ def get_clusters(df):
     scaler = StandardScaler()
     rfm_scaled = scaler.fit_transform(rfm_imputed)
 
-    # Cluster with different k values
-    for k in range(3, 7):  # Example: trying 3 to 6 clusters
+    for k in range(3, 7):
         kmeans = KMeans(n_clusters=k, random_state=1)
         df['Cluster'] = kmeans.fit_predict(rfm_scaled)
         cluster_summary = df.groupby('Cluster').agg({
@@ -63,16 +84,25 @@ def get_clusters(df):
         print(cluster_summary)
         print("\n")
 
-    # Optionally, save the data with the chosen number of clusters
-    k_selected = 5  # Example: Suppose you decide that 5 clusters are optimal
+    
+    k_selected = 5 
     kmeans = KMeans(n_clusters=k_selected, random_state=1)
     df['Cluster'] = kmeans.fit_predict(rfm_scaled)
     df = df[['CustomerID','Recency','Frequency','Monetary','R_Score','F_Score','M_Score','RFM_Score','Cluster']]
     df.to_csv("Customer_RFM_Clusters.csv", index=False)
     return df
 
-def classify_churn_risk(rfm_table):
-    # Example risk levels based on RFM quartiles
+def classify_churn_risk(rfm_table: pd.DataFrame) -> pd.DataFrame:
+    """
+    Classify customers into churn risk levels based on their RFM scores.
+
+    Parameters:
+        rfm_table (DataFrame): Data with RFM scores.
+
+    Returns:
+        DataFrame: Data updated with a 'ChurnRiskLevel' column.
+    """    
+    
     conditions = [
         (rfm_table['R_Score'] <= 2) & (rfm_table['F_Score'] <= 2) & (rfm_table['M_Score'] <= 2),
         (rfm_table['R_Score'] >= 3)
@@ -86,8 +116,17 @@ def classify_churn_risk(rfm_table):
     return rfm_table
 
 
-def churn_rate_by_risk_level(rfm_table):
-    # Calculate churn rate by risk level
+def churn_rate_by_risk_level(rfm_table: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate churn rates by risk level based on customer churn risk classification.
+
+    Parameters:
+        rfm_table (DataFrame): Data with churn risk levels.
+
+    Returns:
+        DataFrame: Churn rate percentages by churn risk level.
+    """    
+    
     risk_level_summary = rfm_table.groupby('ChurnRiskLevel').agg({
         'CustomerID': 'count'
     }).rename(columns={'CustomerID': 'Count'})

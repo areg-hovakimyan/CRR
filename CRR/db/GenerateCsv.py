@@ -1,6 +1,5 @@
 from data_generator import generate_customer, generate_product, generate_order
 import pandas as pd
-import numpy as np
 import random
 from faker import Faker
 
