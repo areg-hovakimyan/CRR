@@ -1,1 +1,1 @@
-::: CRR.db.data_generator
+::: db.data_generator
