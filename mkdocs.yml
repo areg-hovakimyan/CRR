@@ -3,6 +3,9 @@ nav:
   - Home: index.md
   - Database Documentation: db.md
   - Model Documentation: model.md
+  - Data Generator Documentation: generator.md
+  - CSV Generator Documentation: GenerateCsv.md
+
 plugins:
   
   - mkdocstrings:

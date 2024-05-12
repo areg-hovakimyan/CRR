@@ -89,7 +89,7 @@ def get_clusters(df: pd.DataFrame) -> pd.DataFrame:
     kmeans = KMeans(n_clusters=k_selected, random_state=1)
     df['Cluster'] = kmeans.fit_predict(rfm_scaled)
     df = df[['CustomerID','Recency','Frequency','Monetary','R_Score','F_Score','M_Score','RFM_Score','Cluster']]
-    df.to_csv("Customer_RFM_Clusters.csv", index=False)
+    df.to_csv("data/Customer_RFM_Clusters.csv", index=False)
     return df
 
 def classify_churn_risk(rfm_table: pd.DataFrame) -> pd.DataFrame:
