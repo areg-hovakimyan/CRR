@@ -16,3 +16,5 @@ plugins:
         python:
           rendering:
             show_source: true
+
+site_dir: docs            
