@@ -3,7 +3,7 @@ site_name: CRR Project Documentation
 theme:
   name: material
 
-site_dir: website
+site_dir: site
 
 docs_dir: docs  
 
