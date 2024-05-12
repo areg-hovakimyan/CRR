@@ -1,3 +1,6 @@
+# Mkdocs Weblink: https://areg-hovakimyan.github.io/CRR/
+
+
 # API Documentation
 
 This API is designed to manage customers, products, orders, modeling, and churn rates for a retail business application.
