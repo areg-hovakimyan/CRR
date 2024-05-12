@@ -1,4 +1,8 @@
 site_name: CRR Project Documentation
+
+theme:
+  name: material
+
 nav:
   - Home: index.md
   - Database Documentation: db.md
