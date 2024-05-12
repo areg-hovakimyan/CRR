@@ -139,7 +139,16 @@ def get_db():
     finally:
         db.close()
 
-# Customer endpoints
+
+@app.get("/customers/cluster/{cluster_id}/emails", response_model=list[str])
+def get_customer_emails_by_cluster(cluster_id: int, db: Session = Depends(get_db)):
+    customers = db.query(Customer).join(Modeling).filter(Modeling.Cluster == cluster_id).all()
+    if not customers:
+        raise HTTPException(status_code=404, detail="No customers found in this cluster")
+    emails = [customer.EmailAddress for customer in customers if customer.EmailAddress]
+    return emails
+
+
 @app.post("/customers/", response_model=CustomerCreate)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     db_customer = Customer(**customer.dict())
