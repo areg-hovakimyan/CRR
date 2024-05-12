@@ -11,10 +11,10 @@ nav:
   - CSV Generator Documentation: GenerateCsv.md
 
 plugins:
-  
   - mkdocstrings:
       handlers:
         python:
-          paths: [src]
-            rendering:
-              show_source: true
+          paths: [src]  # This line must be at the same indentation level as 'rendering'
+          rendering:
+            show_source: true
+
