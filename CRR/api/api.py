@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker, Session, relationship, declarative_base
 from pydantic import BaseModel
 import datetime
 
+
+
 # Database configuration
 DATABASE_URL = "sqlite:///DB.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})

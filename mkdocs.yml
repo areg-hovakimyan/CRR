@@ -1,1 +1,13 @@
-site_name: My Docs
+site_name: CRR Project Documentation
+nav:
+  - Home: index.md
+  - API Documentation: api.md
+  - Database Documentation: db.md
+  - Model Documentation: model.md
+plugins:
+  
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_source: true

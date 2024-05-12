@@ -70,6 +70,7 @@ def create_engine_db(db_path: str = 'sqlite:///DB.db') -> sqlalchemy.engine.base
     Returns:
         sqlalchemy.engine.base.Engine: A database engine that can be used to interact with the database.
     """
+    
     engine = create_engine(db_path)
     return engine
 
