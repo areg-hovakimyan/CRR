@@ -24,7 +24,7 @@ Follow these steps to get your API up and running on your local machine:
 
 3. **Run the Application**
    ```bash
-   uvicorn api:app --reload
+   uvicorn run:app 
     ```       
 
 
