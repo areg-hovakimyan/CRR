@@ -37,6 +37,11 @@ http://127.0.0.1:8000/docs
 
 ### Customer Endpoints
 
+- **Get Customer Emails by Cluster**
+  - `Get /emails/`
+  - Creates a new customer record.
+  - Swagger UI: [Get Emails by Cluster](http://127.0.0.1:8000/docs#/default/get_customer_emails_by_cluster_customers_cluster__cluster_id__emails_get)
+
 - **Create a Customer**
   - `POST /customers/`
   - Creates a new customer record.
