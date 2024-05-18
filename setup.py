@@ -80,5 +80,5 @@ setup(
 
     ], 
     packages=find_packages(include=["CRR", 'CRR.*']), 
-    version = "0.0.1"   
+    version = "0.0.3"   
 )
