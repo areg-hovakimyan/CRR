@@ -6,6 +6,7 @@ from typing import Tuple
 
 fake = Faker()
 
+
 def modify_order_dates(customer_id: int, num_customers: int) -> Tuple[str, str]:
     """
     Modify order dates to introduce variation based on customer segments, simulating different
@@ -52,6 +53,7 @@ def generate_customers(num_customers: int) -> pd.DataFrame:
                       unique identifiers and personal attributes.
     """
     customers = [generate_customer(i) for i in range(1, num_customers + 1)]
+    pd.DataFrame(customers).to_csv("data/customers.csv")
     return pd.DataFrame(customers)
 
 def generate_products(num_products: int) -> pd.DataFrame:
@@ -65,6 +67,7 @@ def generate_products(num_products: int) -> pd.DataFrame:
         pd.DataFrame: A DataFrame containing product details such as product ID, name, and price.
     """
     products = [generate_product(i) for i in range(1, num_products + 1)]
+    pd.DataFrame(products).to_csv("data/products.csv")
     return pd.DataFrame(products)
 
 def generate_orders(num_customers: int, num_products: int, num_orders: int) -> pd.DataFrame:
@@ -88,6 +91,7 @@ def generate_orders(num_customers: int, num_products: int, num_orders: int) -> p
         order_date = fake.date_between(start_date=start_date, end_date=end_date)
         quantity = adjust_order_quantity(customer_id, num_customers)
         orders.append(generate_order(i, customer_id, product_id, order_date, quantity))
+        pd.DataFrame(orders).to_csv("data/orders.csv")
     return pd.DataFrame(orders)
 
 def save_to_csv(df: pd.DataFrame, filename: str):
@@ -101,4 +105,4 @@ def save_to_csv(df: pd.DataFrame, filename: str):
     Returns:
         None
     """
-    df.to_csv(filename, index=False)
+    df.to_csv(f'data/{filename}', index=False)
